@@ -1,4 +1,5 @@
 const exec = require('child_process').exec;
+const path = require('path');
 
 const {HttpClient} = require('@essential-projects/http');
 const {
@@ -41,7 +42,9 @@ function createExternalTaskWorker(url) {
 }
 
 async function uploadBackupToGDrive(payload) {
-  const commandResult = await execCommand('pwd');
+  const griveFolderPath = path.join(__dirname, '..', 'Google_Drive');
+  const commandResult = await execCommand(`cd ${griveFolderPath} && pwd`);
+
   const result = { 
     output: commandResult
   };
