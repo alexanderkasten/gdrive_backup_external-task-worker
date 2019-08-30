@@ -1,0 +1,34 @@
+{
+  "name": "gdrive_backup_external-task-worker",
+  "version": "0.0.1",
+  "description": "An external task worker for uploading backups to GDrive",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexanderkasten/gdrive_backup_external-task-worker.git"
+  },
+  "keywords": [
+    "external",
+    "task",
+    "worker",
+    "gdrive",
+    "google",
+    "drive",
+    "process-engine"
+  ],
+  "author": "Alexander Kasten",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alexanderkasten/gdrive_backup_external-task-worker/issues"
+  },
+  "homepage": "https://github.com/alexanderkasten/gdrive_backup_external-task-worker#readme",
+  "dependencies": {
+    "@essential-projects/http": "^2.4.0",
+    "@process-engine/external_task_api_client": "^1.2.0",
+    "@process-engine/external_task_api_contracts": "^1.1.0"
+  }
+}
