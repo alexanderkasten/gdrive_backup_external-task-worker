@@ -43,7 +43,7 @@ function createExternalTaskWorker(url) {
 
 async function uploadBackupToGDrive(payload) {
   const griveFolderPath = path.join(__dirname, '..', 'Google_Drive');
-  const commandResult = await execCommand(`cd ${griveFolderPath} && pwd`);
+  const commandResult = await execCommand(`cd ${griveFolderPath} && pwd && grive -s server_backups`);
 
   const result = { 
     output: commandResult
