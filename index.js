@@ -20,12 +20,20 @@ const POLLING_TIMEOUT = 1000;
 
 async function execCommand(command) {
   return new Promise((resolve, reject) => {
-    exec(command, (err, stdin, stderr) => {
+    const childProcess = exec(command, (err, stdin, stderr) => {
       if (err || stderr) {
         reject(err, stderr);
       }
 
       return resolve(stdin);
+    });
+
+    childProcess.stdout.on('data', (data) => {
+      console.log(data);
+    });
+  
+    childProcess.stderr.on('data', (data) => {
+      console.log(data);
     });
   });
 }
