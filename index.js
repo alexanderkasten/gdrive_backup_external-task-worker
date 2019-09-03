@@ -18,6 +18,8 @@ const TOPIC = 'UPLOAD_BACKUP';
 const MAX_TASKS = 10;
 const POLLING_TIMEOUT = 1000;
 
+let scriptOutput = "";
+
 async function execCommand(command) {
   return new Promise((resolve, reject) => {
     const childProcess = exec(command, (err, stdin, stderr) => {
@@ -30,10 +32,13 @@ async function execCommand(command) {
 
     childProcess.stdout.on('data', (data) => {
       console.log(data);
+      scriptOutput+= data;
     });
   
     childProcess.stderr.on('data', (data) => {
       console.log(data);
+      scriptOutput+= data;
+
     });
   });
 }
@@ -59,7 +64,7 @@ async function uploadBackupToGDrive(payload) {
   }
 
   const result = { 
-    output: commandResult
+    output: scriptOutput
   };
 
   console.log('Done!');
