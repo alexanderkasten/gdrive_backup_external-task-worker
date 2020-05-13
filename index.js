@@ -1,5 +1,6 @@
 const exec = require('child_process').exec;
 const path = require('path');
+const fs = require('fs');
 
 const {HttpClient} = require('@essential-projects/http');
 const {
@@ -55,12 +56,18 @@ function createExternalTaskWorker(url) {
 }
 
 async function uploadBackupToGDrive(payload) {
-  const griveFolderPath = path.join(__dirname, '..', 'Google_Drive');
-  let commandResult;
-  try {
-    commandResult = await execCommand(`cd ${griveFolderPath} && pwd && grive -s server_backups`);
-  } catch (error) {
-    commandResult = error;
+  const backupFolderPath = path.join(__dirname, '..', 'cloud_backups');
+  const files = fs.readdirSync(backupFolderPath, {encoding: 'utf8'});
+
+  for (const file of files) {
+    scriptOutput += `copy ${backupFolderPath}/${file} to google drive`;
+    try {
+      await execCommand(`cp -f ${backupFolderPath}/${file} ~/drive/server_backups`);
+    } catch (error) {
+      console.error(error)
+      scriptOutput += `copy operation failed for ${backupFolderPath}/${file}`;
+      scriptOutput += error;
+    }
   }
 
   const result = { 
