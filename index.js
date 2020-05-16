@@ -1,6 +1,7 @@
 const exec = require('child_process').exec;
 const path = require('path');
 const fs = require('fs');
+const { performance } = require('perf_hooks');
 
 const {HttpClient} = require('@essential-projects/http');
 const {
@@ -21,33 +22,10 @@ const POLLING_TIMEOUT = 1000;
 
 let scriptOutput = "";
 
-async function execCommand(command) {
-  return new Promise((resolve, reject) => {
-    const childProcess = exec(command, (err, stdin, stderr) => {
-      if (err || stderr) {
-        reject(err, stderr);
-      }
-
-      return resolve(stdin);
-    });
-
-    childProcess.stdout.on('data', (data) => {
-      console.log(data);
-      scriptOutput+= data;
-    });
-  
-    childProcess.stderr.on('data', (data) => {
-      console.log(data);
-      scriptOutput+= data;
-
-    });
-  });
-}
-
 function createExternalTaskWorker(url) {
   const httpClient = new HttpClient();
   httpClient.config = {url: url};
-  
+
   const externalAccessor = new ExternalTaskApiExternalAccessor(httpClient);
   const externalTaskAPIService = new ExternalTaskApiClientService(externalAccessor);
   const externalTaskWorker = new ExternalTaskWorker(externalTaskAPIService);
@@ -55,26 +33,34 @@ function createExternalTaskWorker(url) {
   return externalTaskWorker;
 }
 
+function log(text) {
+  console.log(text);
+  scriptOutput += text;
+}
+
 async function uploadBackupToGDrive(payload) {
   const backupFolderPath = path.join(__dirname, '..', 'cloud_backups');
   const files = fs.readdirSync(backupFolderPath, {encoding: 'utf8'});
 
-  for (const file of files) {
-    scriptOutput += `copy ${backupFolderPath}/${file} to google drive`;
-    try {
-      await execCommand(`cp -f ${backupFolderPath}/${file} ~/drive/server_backups`);
-    } catch (error) {
-      console.error(error)
-      scriptOutput += `copy operation failed for ${backupFolderPath}/${file}`;
-      scriptOutput += error;
-    }
-  }
+  files.forEach((file) => {
+    const timeStart = performance.now()
+    log(`Start copy ${backupFolderPath}/${file} to google drive`);
 
-  const result = { 
+    exec(`cp -f ${backupFolderPath}/${file} ~/drive/server_backups`, ((error, stdout, stderr) => {
+      if (error || stderr) {
+        log(error || stderr);
+        log(`Copy operation failed for ${backupFolderPath}/${file}`);
+      }
+
+      const timeStop = performance.now()
+      log(`Copied ${backupFolderPath}/${file} to ~/drive/server_backups in ${Math.floor(timeStop - timeStart)} ms.`)
+      log(stdout);
+    }));
+  });
+
+  const result = {
     output: scriptOutput
   };
-
-  console.log('Done!');
 
   return result;
 };
@@ -93,7 +79,7 @@ async function main() {
     const externalTaskFinished = new ExternalTaskFinished(externalTask.id, result);
 
     return externalTaskFinished;
-  }); 
+  });
 }
 
 main();
