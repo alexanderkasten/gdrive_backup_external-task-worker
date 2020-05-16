@@ -35,28 +35,37 @@ function createExternalTaskWorker(url) {
 
 function log(text) {
   console.log(text);
-  scriptOutput += text;
+  scriptOutput += `\n${text}`;
 }
 
 async function uploadBackupToGDrive(payload) {
   const backupFolderPath = path.join(__dirname, '..', 'cloud_backups');
   const files = fs.readdirSync(backupFolderPath, {encoding: 'utf8'});
 
+  const promises = [];
   files.forEach((file) => {
-    const timeStart = performance.now()
-    log(`Start copy ${backupFolderPath}/${file} to google drive`);
+    const copyPromise = new Promise((resolve, reject) => {
+      const timeStart = performance.now()
+      log(`Start copy ${backupFolderPath}/${file} to google drive`);
 
-    exec(`cp -f ${backupFolderPath}/${file} ~/drive/server_backups`, ((error, stdout, stderr) => {
-      if (error || stderr) {
-        log(error || stderr);
-        log(`Copy operation failed for ${backupFolderPath}/${file}`);
-      }
+      exec(`cp -f ${backupFolderPath}/${file} ~/drive/server_backups`, ((error, stdout, stderr) => {
+        if (error || stderr) {
+          log(error || stderr);
+          log(`Copy operation failed for ${backupFolderPath}/${file}`);
+          reject(error || stderr);
+        }
 
-      const timeStop = performance.now()
-      log(`Copied ${backupFolderPath}/${file} to ~/drive/server_backups in ${Math.floor(timeStop - timeStart)} ms.`)
-      log(stdout);
-    }));
+        const timeStop = performance.now()
+        log(`Copied ${backupFolderPath}/${file} to ~/drive/server_backups in ${Math.floor(timeStop - timeStart)} ms.`)
+        log(stdout);
+        resolve(stdout);
+      }));
+    });
+
+    promises.push(copyPromise);
   });
+
+  await Promise.all(promises);
 
   const result = {
     output: scriptOutput
