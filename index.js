@@ -39,6 +39,7 @@ function log(text) {
 }
 
 async function uploadBackupToGDrive(payload) {
+  scriptOutput = '';
   const backupFolderPath = path.join(__dirname, '..', 'cloud_backups');
   const files = fs.readdirSync(backupFolderPath, {encoding: 'utf8'});
 
