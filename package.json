@@ -27,8 +27,6 @@
   },
   "homepage": "https://github.com/alexanderkasten/gdrive_backup_external-task-worker#readme",
   "dependencies": {
-    "@essential-projects/http": "^2.4.0",
-    "@process-engine/external_task_api_client": "^1.2.0",
-    "@process-engine/external_task_api_contracts": "^1.1.0"
+    "@process-engine/consumer_api_client": "^6.4.2"
   }
 }

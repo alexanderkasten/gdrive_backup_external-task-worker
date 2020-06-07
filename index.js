@@ -3,19 +3,13 @@ const path = require('path');
 const fs = require('fs');
 const { performance } = require('perf_hooks');
 
-const {HttpClient} = require('@essential-projects/http');
-const {
-  ExternalTaskApiClientService,
-  ExternalTaskApiExternalAccessor,
-  ExternalTaskWorker,
-} = require('@process-engine/external_task_api_client');
+const { ExternalTaskWorker } = require('@process-engine/consumer_api_client');
 
-const {ExternalTaskFinished} = require('@process-engine/external_task_api_contracts');
-
-const identity = {
+const IDENTITY = {
   token: 'ZHVtbXlfdG9rZW4=',
 };
 
+const PROCESS_ENGINE_URI = 'https://pe.kasten.pw';
 const TOPIC = 'UPLOAD_BACKUP';
 const MAX_TASKS = 10;
 const POLLING_TIMEOUT = 1000;
@@ -75,21 +69,13 @@ async function uploadBackupToGDrive(payload) {
   return result;
 };
 
-async function main() {
-  const externalTaskWorker = createExternalTaskWorker('https://pe.kasten.pw');
 
-  console.log(`Waiting for tasks with topic '${TOPIC}'.`);
+const executor = async (externalTask) => {
+  const result = await uploadBackupToGDrive(externalTask.payload);
 
-  externalTaskWorker.waitForAndHandle(identity, TOPIC, MAX_TASKS, POLLING_TIMEOUT, async (externalTask) => {
-    console.log('ExternalTask data: ');
-    console.log(externalTask);
-    console.log('');
+  return result;
+};
 
-    const result = await uploadBackupToGDrive(externalTask.payload);
-    const externalTaskFinished = new ExternalTaskFinished(externalTask.id, result);
+const externalTaskWorker = new ExternalTaskWorker(PROCESS_ENGINE_URI, IDENTITY, TOPIC, MAX_TASKS, POLLING_TIMEOUT, executor);
 
-    return externalTaskFinished;
-  });
-}
-
-main();
+externalTaskWorker.start();
